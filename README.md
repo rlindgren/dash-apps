@@ -3,10 +3,10 @@
 ```
 # make a virtualenv
 
-python3 -m venv cvenv
+python3 -m venv myvenv
 
 # activate it
-source cvenv/bin/activate
+source myvenv/bin/activate
 
 # install the needed packages
 pip install pandas
