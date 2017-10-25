@@ -10,6 +10,7 @@ source cvenv/bin/activate
 
 # install the needed packages
 pip install pandas
+pip install geopandas
 pip install numpy
 pip install dash==0.18.3
 pip install dash-renderer==0.11.0
