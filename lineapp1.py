@@ -95,7 +95,7 @@ for similar colors being used for different model-scenario groups.__
 
 '''
 
-# # # # #NEW LAYOUT # # # # 
+# Build App Layout
 app.layout = html.Div([
     dcc.Markdown( children=markdown_head ),
     html.Div([
