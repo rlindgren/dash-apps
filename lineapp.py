@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 # load the data
-df = pd.read_csv( './tas_mean_NCAR-CCSM4_rcp85_annual_decadals_profiles_nwt_mine_sites.csv', index_col=0 )
+df = pd.read_csv( './data/tas_mean_NCAR-CCSM4_rcp85_annual_decadals_profiles_nwt_mine_sites.csv', index_col=0 )
 
 def melt_it( df ):
     df = df.reset_index()
