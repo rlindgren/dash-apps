@@ -1,6 +1,5 @@
-pip install rasterio
-pip install pandas
-pip install numpy
+pip install pandas==latest
+pip install numpy==latest
 pip install dash==0.18.3
 pip install dash-renderer==0.11.0
 pip install dash-html-components==0.8.0
