@@ -100,35 +100,54 @@ app.layout = html.Div([
     dcc.Markdown( children=markdown_head ),
     html.Div([
         html.Div([
-            # html.H3('Column 1'),
-            html.Label('Choose Minesite', style={'font-weight':'bold'}),
-            dcc.RadioItems(    
-                id='my-radio',
-                options=[ {'label':i.replace('_', ' '), 'value':i} for i in df.minesite.unique() ],
-                value='Prairie_Creek_Mine',
-                labelStyle={'display': 'inline-block'}
+            dcc.Tabs( 
+                id='tabs',
+                tabs=[
+                    {'label': 'Annual Decadal Temps - minesites', 'value': 1},
+                    {'label': 'Monthly Decadal Temps - minesites', 'value': 2},
+                    {'label': 'Annual Decadal Temps - NWT', 'value': 3},
+                    {'label': 'Monthly Decadal Temps - NWT', 'value': 4},
+                ],
+                value=1,
+                vertical=True,
+                style={
+                    'height': '100vh',
+                    'borderRight': 'thin lightgrey solid',
+                    'textAlign': 'left'
+                }
             ),
-            html.Label('Choose Scenario(s)', style={'font-weight':'bold'}),
-            dcc.Checklist( id='scenario-check',
-                options=[{'label': i, 'value': i} for i in scenarios ], #df.scenario.unique()
-                values=['rcp85'],
-                labelStyle={'display': 'inline-block'}
-            ),
-            html.Label('Choose Model(s)', style={'font-weight':'bold'}),
-            dcc.Dropdown(
-                id='model-dropdown',
-                options=[ {'label':i, 'value':i} for i in df.model.unique() ],
-                value=['IPSL-CM5A-LR'],
-                multi=True
-            ),
-            dcc.Graph( id='my-graph' ),
-            dcc.RangeSlider( id='range-slider',
-                marks={str(year): str(year) for year in df['year'].unique()[::2]},
-                min=df['year'].min(),
-                max=df['year'].max(),
-                step=2,
-                value=[df['year'].unique().min(), df['year'].unique().max()]
-            )
+            ], className="six columns"),
+        
+            html.Div([
+                # html.H3('Column 1'),
+                html.Label('Choose Minesite', style={'font-weight':'bold'}),
+                dcc.RadioItems(    
+                    id='my-radio',
+                    options=[ {'label':i.replace('_', ' '), 'value':i} for i in df.minesite.unique() ],
+                    value='Prairie_Creek_Mine',
+                    labelStyle={'display': 'inline-block'}
+                ),
+                html.Label('Choose Scenario(s)', style={'font-weight':'bold'}),
+                dcc.Checklist( id='scenario-check',
+                    options=[{'label': i, 'value': i} for i in scenarios ], #df.scenario.unique()
+                    values=['rcp85'],
+                    labelStyle={'display': 'inline-block'}
+                ),
+                html.Label('Choose Model(s)', style={'font-weight':'bold'}),
+                dcc.Dropdown(
+                    id='model-dropdown',
+                    options=[ {'label':i, 'value':i} for i in df.model.unique() ],
+                    value=['IPSL-CM5A-LR'],
+                    multi=True
+                ),
+                dcc.Graph( id='my-graph' ),
+                dcc.RangeSlider( id='range-slider',
+                    marks={str(year): str(year) for year in df['year'].unique()[::2]},
+                    min=df['year'].min(),
+                    max=df['year'].max(),
+                    step=2,
+                    value=[df['year'].unique().min(), df['year'].unique().max()]
+                )
         ], className="six columns"),
 
         html.Div([
