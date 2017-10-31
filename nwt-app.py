@@ -59,7 +59,9 @@ map_layout = go.Layout(
                     autosize=True,
                     hovermode='closest',
                     mapbox=mapbox_config,
-                    showlegend=False )
+                    showlegend=False,
+                    margin = dict(l = 0, r = 0, t = 0, b = 0)
+                     )
 
 map_figure = go.Figure( dict(data=map_traces, layout=map_layout) )
 
@@ -164,12 +166,12 @@ app.layout = html.Div([
                                 value=[df['year'].unique().min(), df['year'].unique().max()]
                             )
                         ], className='eleven columns'),
-                    ], className="seven columns" ),
+                    ], className="eight columns" ),
 
                     html.Div([
                         dcc.Graph( id='minesites-map', figure=map_figure ),
                         dcc.Markdown( children=markdown_map )
-                    ], className="five columns" ),
+                    ], className="four columns" ),
             ]),
         html.Div(id='intermediate-value', style={'display': 'none'}),
         ])
