@@ -7,15 +7,21 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 
-# load the data constants
-df = pd.read_csv( './data/tas_minesites_decadal_annual_mean_alldata_melted.csv' )
-df = df[ (df.year > 2000) ]
+files = [ 'tas_minesites_decadal_annual_mean_alldata_melted.csv',
+         'tas_minesites_decadal_monthly_mean_alldata_melted.csv' ]
+
+files = [ os.path.join( '.','data',fn ) for fn in files ]
+data = { count+1:pd.read_csv(fn, index_col=0) for count, fn in enumerate( files ) }
+
+df = data[1] # use this to build out some stuff in the layout...
+
 pts = pd.read_csv( './data/minesites.csv', index_col=0 )
 nwt_shape = './data/NorthwestTerritories_4326.geojson'
 mapbox_access_token = 'pk.eyJ1IjoiZWFydGhzY2llbnRpc3QiLCJhIjoiY2o4b3J5eXdwMDZ5eDM4cXU4dzJsMGIyZiJ9.a5IlzVUBGzJbQ0ayHC6t1w'
 group = 'annual_decadals'
 scenarios = ['rcp45', 'rcp60','rcp85']
 
+# # # # CONFIGURE MAPBOX AND DATA OVERLAYS
 ptsd = list(pts.T.to_dict().values())
 # MINE_ORDER_REFERENCE = ['CanTung Mine', 'Diavik Mine', 'Ekati Mine', 'Gahcho Kue Mine', 'NICO Mine', 'Pine Point Mine (Tamerlane)', 'Prairie Creek Mine', 'Snap Lake Mine'] 
 textpositions = ['top center','bottom center','top center','bottom right','middle left','top right','below center','bottom left']
@@ -27,20 +33,11 @@ map_traces = [ go.Scattermapbox(
             text=[pt['Name']],
             textposition=tp ) for tp,pt in zip(textpositions, ptsd) ]
 
-# # single trace example
-# map_traces = [ go.Scattermapbox(
-#             lat=pts['Latitude'],
-#             lon=pts['Longitude'],
-#             mode='markers+text',
-#             marker=go.Marker(size=12, color='rgb(140,86,75)'),
-#             text=pts['Name'],
-#             textposition=textpositions ) ]
-
 
 mapbox_config = dict(accesstoken=mapbox_access_token,
                         bearing=0,
                         pitch=0,
-                        zoom=3,
+                        zoom=2,
                         center=dict(lat=65,
                                     lon=-118),
                         layers=[ dict( sourcetype='geojson',
@@ -65,12 +62,6 @@ ms_colors = {'GISS-E2-R':{'rcp45':'#FDD017','rcp60':'#F2BB66','rcp85':'#EAC117'}
             'MRI-CGCM3':{'rcp45':'#4863A0','rcp60':'#2B547E','rcp85':'#151B54'},
             'NCAR-CCSM4':{'rcp45':'#C35817','rcp60':'#6F4E37','rcp85':'#493D26'} }
 
-app = dash.Dash()
-
-markdown_head = ''' 
-### Northwest Territories Mine Sites -- Decadal Mean Annual Temperature
-
-'''
 
 markdown_map = '''
 #### How to use this application:
@@ -95,76 +86,214 @@ for similar colors being used for different model-scenario groups.__
 
 '''
 
-# Build App Layout
-app.layout = html.Div([
-    dcc.Markdown( children=markdown_head ),
-    html.Div([
-        html.Div([
-            # html.H3('Column 1'),
-            html.Label('Choose Minesite', style={'font-weight':'bold'}),
-            dcc.RadioItems(    
-                id='my-radio',
-                options=[ {'label':i.replace('_', ' '), 'value':i} for i in df.minesite.unique() ],
-                value='Prairie_Creek_Mine',
-                labelStyle={'display': 'inline-block'}
-            ),
-            html.Label('Choose Scenario(s)', style={'font-weight':'bold'}),
-            dcc.Checklist( id='scenario-check',
-                options=[{'label': i, 'value': i} for i in scenarios ], #df.scenario.unique()
-                values=['rcp85'],
-                labelStyle={'display': 'inline-block'}
-            ),
-            html.Label('Choose Model(s)', style={'font-weight':'bold'}),
-            dcc.Dropdown(
-                id='model-dropdown',
-                options=[ {'label':i, 'value':i} for i in df.model.unique() ],
-                value=['IPSL-CM5A-LR'],
-                multi=True
-            ),
-            dcc.Graph( id='my-graph' ),
-            dcc.RangeSlider( id='range-slider',
-                marks={str(year): str(year) for year in df['year'].unique()[::2]},
-                min=df['year'].min(),
-                max=df['year'].max(),
-                step=2,
-                value=[df['year'].unique().min(), df['year'].unique().max()]
-            )
-        ], className="six columns"),
+app = dash.Dash()
 
-        html.Div([
-            # html.H3('Column 2'),
-            dcc.Graph( id='my-map', figure=map_figure ),
-            dcc.Markdown( children=markdown_map )
-        ], className="six columns"),
-    
-        ], className="row" )
-])
+markdown_head = ''' 
+### Northwest Territories Mine Sites -- Decadal Mean Annual Temperature
+'''
+
+# app.layout = html.Div([ 
+#                 html.Div([
+#                     dcc.Markdown( children=markdown_head ),
+#                     dcc.Tabs( 
+#                         id='tabs',
+#                         tabs=[ {'label': 'Annual Decadal Temps - minesites', 'value': 1},
+#                                 {'label': 'Monthly Decadal Temps - minesites', 'value': 2} ],
+#                         value=1,
+#                         vertical=False
+#                     ),
+#                     html.Div([
+#                         html.Div([ html.Label('Choose Minesite', style={'font-weight':'bold'}),
+#                                  dcc.Dropdown( id='my-radio',
+#                                     options=[ {'label':i.replace('_', ' '), 'value':i} for i in df.minesite.unique() ],
+#                                     value='Prairie_Creek_Mine',
+#                                     multi=False,
+#                                     )], className='three columns' ),
+
+#                         html.Div([ html.Label('Choose Scenario(s)', style={'font-weight':'bold'}),
+#                                 dcc.Checklist( id='scenario-check',
+#                                     options=[{'label': i, 'value': i} for i in scenarios ], #df.scenario.unique()
+#                                     values=['rcp85'],
+#                                     labelStyle={'display': 'inline-block'}
+#                                 )], className='three columns'),
+#                         html.Div( id='month-div', className='two columns')
+#                         ], className='row'),
+
+#                 html.Div([ html.Label('Choose Model(s)', style={'font-weight':'bold'}),
+#                     dcc.Dropdown(
+#                         id='model-dropdown',
+#                         options=[ {'label':i, 'value':i} for i in df.model.unique() ],
+#                         value=['IPSL-CM5A-LR'],
+#                         multi=True
+#                         )
+#                     ], className='eight columns'),
+
+#                     dcc.Graph( id='my-graph' ),
+#                     dcc.RangeSlider( id='range-slider',
+#                         marks={str(year): str(year) for year in df['year'].unique()[::2]},
+#                         min=df['year'].min(),
+#                         max=df['year'].max(),
+#                         step=2,
+#                         value=[df['year'].unique().min(), df['year'].unique().max()]
+#                     )], className="eight columns" ),
+#                 html.Div([
+#                     dcc.Graph( id='my-map', figure=map_figure ),
+#                     dcc.Markdown( children=markdown_map )
+#                     ], className="four columns" ),
+#                 html.Div(id='intermediate-value'), #, style={'display': 'none'}
+#                 ])
+
+
+
+# Build App Layout
+app.layout = html.Div([ 
+                html.Div([
+                    dcc.Markdown( children=markdown_head ),
+                    dcc.Tabs( 
+                        id='tabs',
+                        tabs=[
+                            {'label': 'Annual Decadal Temps - minesites', 'value': 1},
+                            {'label': 'Monthly Decadal Temps - minesites', 'value': 2},
+                            # {'label': 'Annual Decadal Temps - NWT', 'value': 3},
+                            # {'label': 'Monthly Decadal Temps - NWT', 'value': 4},
+                        ],
+                        value=1,
+                        vertical=False
+                    ),
+                ]),
+
+                html.Div([ 
+                    html.Div([
+                        # dcc.RadioItems(    
+                        #     id='my-radio',
+                        #     options=[ {'label':i.replace('_', ' '), 'value':i} for i in df.minesite.unique() ],
+                        #     value='Prairie_Creek_Mine',
+                        #     labelStyle={'display': 'inline-block'},
+                        #     style={'width':'70%'}
+                        # ),
+                    html.Div([
+                        html.Div([ html.Label('Choose Minesite', style={'font-weight':'bold'}),
+                                 dcc.Dropdown( id='my-radio',
+                                    options=[ {'label':i.replace('_', ' '), 'value':i} for i in df.minesite.unique() ],
+                                    value='Prairie_Creek_Mine',
+                                    multi=False,
+                                    )], className='three columns' ),
+
+                        html.Div([ html.Label('Choose Scenario(s)', style={'font-weight':'bold'}),
+                                dcc.Checklist( id='scenario-check',
+                                    options=[{'label': i, 'value': i} for i in scenarios ], #df.scenario.unique()
+                                    values=['rcp85'],
+                                    labelStyle={'display': 'inline-block'}
+                                )], className='three columns'),
+                        html.Div( id='month-div', className='two columns')
+                        ], className='row'),
+
+
+                        # html.Div([
+                        #     html.Div([
+                        #         html.Label('Choose Scenario(s)', style={'font-weight':'bold'}),
+                        #         dcc.Checklist( id='scenario-check',
+                        #             options=[{'label': i, 'value': i} for i in scenarios ], #df.scenario.unique()
+                        #             values=['rcp85'],
+                        #             labelStyle={'display': 'inline-block'}
+                        #         )], className='six columns'),
+                        #     html.Div([], id='month-div', className='six columns'),
+                        # ], className='row'),
+                        html.Label('Choose Model(s)', style={'font-weight':'bold'}),
+                        dcc.Dropdown(
+                            id='model-dropdown',
+                            options=[ {'label':i, 'value':i} for i in df.model.unique() ],
+                            value=['IPSL-CM5A-LR'],
+                            multi=True
+                        ),
+                        dcc.Graph( id='my-graph' ),
+                        dcc.RangeSlider( id='range-slider',
+                            marks={str(year): str(year) for year in df['year'].unique()[::2]},
+                            min=df['year'].min(),
+                            max=df['year'].max(),
+                            step=2,
+                            value=[df['year'].unique().min(), df['year'].unique().max()]
+                        )], className="eight columns" ),
+                    html.Div([
+                        dcc.Graph( id='my-map', figure=map_figure ),
+                        dcc.Markdown( children=markdown_map )
+                    ], className="four columns" ),
+            ], className="row"),
+        html.Div(id='intermediate-value'), #, style={'display': 'none'}
+        ])
+
 
 # THE DEFAULT PLOTLY DASH CSS FROM @chriddyp  
 app.css.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'})
+app.config['suppress_callback_exceptions']=True
 
-@app.callback( Output('my-graph', 'figure'), 
-                [Input('my-radio', 'value'),
+@app.callback( Output('my-graph', 'figure'), [Input('intermediate-value', 'children')] )
+def update_graph( data ):
+    print('updating graph')
+    dff = pd.read_json( data ).sort_index()
+    if '-' in str(dff.loc[0, 'x_axis']):
+        # its monthlies -- above is a complete dirty hack
+        return {'data':[ go.Scatter( x=j['year'], 
+                    y=j['tas'], 
+                    name=i[0]+' '+i[1], 
+                    line=dict(color=ms_colors[i[0]][i[1]], width=2 ),
+                    mode='lines') for i,j in dff.groupby(['model','scenario','month']) ] }
+    else: 
+        # its annuals
+        return {'data':[ go.Scatter( x=j['year'], 
+                                    y=j['tas'],
+                                    name=i[0]+' '+i[1], 
+                                    line=dict(color=ms_colors[i[0]][i[1]], width=2 ),
+                                    mode='lines') for i,j in dff.groupby(['model','scenario']) ] }
+
+@app.callback( Output('intermediate-value', 'children'), 
+                [Input('tabs', 'value'),
+                Input('my-radio', 'value'),
                 Input('range-slider', 'value'),
                 Input('scenario-check', 'values'),
                 Input('model-dropdown', 'value'),
-                Input('my-map', 'clickData')] )
-def update_graph( minesite, year_range, scenario_values, model_values, minesite_click ):
+                Input('month-dropdown','value')
+                ] )
+def prep_data( selected_tab_value, minesite, year_range, scenario_values, model_values, month ):
     import itertools
 
-    filtered_df = df[ df.minesite == minesite ] 
+    print( 'prepping data' ) # [ TEST ]
+
+    df_select = data[ selected_tab_value ].copy()
+    filtered_df = df_select[ df_select.minesite == minesite ]
     begin_range, end_range = year_range
     filtered_df = filtered_df[ (filtered_df['year'] >= begin_range) & (filtered_df['year'] <= end_range) ]
+    filtered_df = filtered_df.loc[ filtered_df[ 'scenario' ].isin( scenario_values ), ]
+    filtered_df = filtered_df.loc[ filtered_df[ 'model' ].isin( model_values ), ]
 
-    # handle scenarios /  models ...
-    args = itertools.product( scenario_values, model_values )
-    
-    return {'data':[ go.Scatter( x=filtered_df.loc[ (filtered_df.scenario == s)&(filtered_df.model == m), 'year'], 
-                        y=filtered_df.loc[ (filtered_df.scenario == s)&(filtered_df.model == m), 'tas'], 
-                        name=m+' '+s, 
-                        line=dict(color=ms_colors[m][s], width=2 ),
-                        mode='lines') 
-                            for s,m in args ] }
+    if selected_tab_value == 2:
+        print('month={}'.format(month))
+        filtered_df = filtered_df[ filtered_df['month'] == month ]
+        filtered_df['x_axis'] = [ '{}-{}'.format(*i) for i in zip(filtered_df.month.tolist(), filtered_df.year.tolist()) ]
+    else:
+        filtered_df['x_axis'] = filtered_df['year']
+
+    filtered_df = filtered_df.reset_index(drop=True)
+
+    return filtered_df.to_json()
+
+
+@app.callback( Output('month-div', 'children'), [Input('tabs', 'value')] )
+def show_hide_month_drop( selected_tab_value ):
+    print('selected_tab_value = {}'.format(selected_tab_value))
+    if selected_tab_value == 2:
+        return [html.Label('Choose Month(s)', style={'font-weight':'bold'}),
+                dcc.Dropdown(
+                    id='month-dropdown',
+                    options=[ {'label':i, 'value':i} for i in range(1, 12+1) ],
+                    value=1,
+                    multi=False,
+                    disabled=False
+                )]
+    else:
+        return '''
+
+        '''
 
 @app.callback( Output('my-radio', 'value'), [Input('my-map', 'clickData')])
 def update_minesite_radio( clickdata ):
@@ -173,37 +302,6 @@ def update_minesite_radio( clickdata ):
     else:
         return 'Prairie_Creek_Mine'
 
-# @app.callback( Output('my-map', 'figure'), 
-#                 [Input('my-map', 'clickData')] )
-# def update_map( minesite ):
-#     minesite = minesite['points'][0]['text']
-#     minesite = minesite.replace('_', ' ')
-#     print(minesite)
-#     # sub_ptsd = [ i for i in ptsd if i['Name'] == minesite ]
-#     return {'data':[ go.Scattermapbox( lat=[pt['Latitude']], lon=[pt['Longitude']],
-#                                         mode='markers+text',
-#                                         marker=go.Marker(size=12, color='rgb(140,86,75)'),
-#                                         text=[pt['Name']],
-#                                         textposition="top center" ) 
-#                     if pt['Name'] != minesite else 
-#                     go.Scattermapbox( lat=[pt['Latitude']], lon=[pt['Longitude']],
-#                                     mode='markers+text',
-#                                     marker=go.Marker(size=15, color='Red'),
-#                                     text=[pt['Name']],
-#                                     textposition="top center" ) for pt in ptsd ]}
-
-
-#     # return{'data':[ go.Scattermapbox( lat=[pt['Latitude']], lon=[pt['Longitude']],
-#     #                                     mode='markers+text',
-#     #                                     marker=go.Marker(size=12, color='rgb(140,86,75)'),
-#     #                                     text=[pt['Name']],
-#     #                                     textposition="top center" ) 
-#     #                 if pt['Name'] != minesite else 
-#     #                 go.Scattermapbox( lat=[pt['Latitude']], lon=[pt['Longitude']],
-#     #                                 mode='markers+text',
-#     #                                 marker=go.Marker(size=15, color='rgb(140,86,75)'),
-#     #                                 text=[pt['Name']],
-#     #                                 textposition="top center" ) for pt in ptsd ]}
 
 
 if __name__ == '__main__':
