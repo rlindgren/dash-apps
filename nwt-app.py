@@ -105,17 +105,6 @@ app.css.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
 # # BUILD PAGE LAYOUT
 app.layout = html.Div([ 
                 dcc.Markdown( id='mdown-head' ),
-                # html.Div([
-                #     dcc.Tabs( 
-                #         id='tabs',
-                #         tabs=[
-                #             {'label': 'Annual Decadal Temps - minesites', 'value': 1},
-                #             {'label': 'Monthly Decadal Temps - minesites', 'value': 2},
-                #         ],
-                #         value=1,
-                #         vertical=False
-                #         ),
-                #     ]),
                 html.Div([ 
                     html.Div([
                         dcc.Tabs( 
@@ -213,14 +202,11 @@ def average_months( dff, model, scenario ):
     dfm = sub_df.groupby( 'month' ).apply(lambda x: x['tas'].reset_index(drop=True)).T.mean(axis=1).copy()
     # convert back to a DataFrame from the output Series...
     dfm = dfm.to_frame(name='tas').reset_index(drop=True)
-    # print(dfm.shape)
-    # print(sub_df)
     dfm['year'] = sub_df['year'].unique()
     dfm['model'] = model
     dfm['scenario'] = scenario
     dfm['month'] = '_'.join(['avg'] + [ str(m) for m in dff.month.unique() ])
     return dfm
-
 
 @app.callback( Output('intermediate-value', 'children'), 
                 [Input('tabs', 'value'),
