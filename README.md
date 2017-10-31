@@ -1,5 +1,10 @@
 #### INSTALLATION
 
+A Simple Dash Application to examine CMIP5 Downscaled climate model outputs over
+the Northwest Territories, Canada. 
+
+All work is funded through SNAP at the University of Alaska Fairbanks.
+
 ```
 # make a virtualenv
 
@@ -19,7 +24,7 @@ pip install dash-core-components==0.13.0
 pip install plotly --upgrade
 
 # run most up-to-date version of the application
-python lineapp1.py
+python nwt-app.py
 
 # navigate to http://127.0.0.1:8050/
 
