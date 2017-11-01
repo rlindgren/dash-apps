@@ -197,12 +197,12 @@ def update_minesite_radio( clickdata ):
 def update_header( selected_tab_value ):
     if selected_tab_value == 1:
         return ''' 
-        ## Northwest Territories Mine Sites -- Decadal Mean Annual Temperature
-        '''
+### Northwest Territories Mine Sites -- Decadal Mean Annual Temperature
+'''
     elif selected_tab_value == 2:
         return ''' 
-        ### Northwest Territories Mine Sites -- Decadal Mean Monthly Temperature
-        '''
+### Northwest Territories Mine Sites -- Decadal Mean Monthly Temperature
+'''
 
 def average_months( dff, model, scenario ):
     ''' 
