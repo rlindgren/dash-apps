@@ -1,6 +1,8 @@
-pandas
-geopandas
 numpy
+pandas
+shapely
+fiona
+geopandas
 dash==0.18.3
 dash-renderer==0.11.0
 dash-html-components==0.8.0
