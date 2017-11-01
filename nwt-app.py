@@ -25,6 +25,7 @@ pts = pd.read_csv( './data/minesites.csv', index_col=0 )
 nwt_shape = './data/NorthwestTerritories_4326.geojson'
 mapbox_access_token = 'pk.eyJ1IjoiZWFydGhzY2llbnRpc3QiLCJhIjoiY2o4b3J5eXdwMDZ5eDM4cXU4dzJsMGIyZiJ9.a5IlzVUBGzJbQ0ayHC6t1w'
 scenarios = ['rcp45','rcp60','rcp85']
+month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 # # CONFIGURE MAPBOX AND DATA OVERLAYS
 ptsd = list(pts.T.to_dict().values())
@@ -133,7 +134,7 @@ app.layout = html.Div([
                             html.Div( [ html.Label('Choose Month(s)', style={'font-weight':'bold'}),
                                         dcc.Dropdown(
                                             id='month-dropdown',
-                                            options=[ {'label':i, 'value':i} for i in range(1, 12+1) ],
+                                            options=[ {'label':month_names[i], 'value':i} for i in range(1, 12+1) ],
                                             value=[1],
                                             multi=True ) ], id='month-div', className='four columns')
                             ], className='row'),
